@@ -20,21 +20,26 @@ def rpc_call(method: str, params: list):
         'method': method,
         'params': params,
     }
-    
+
     headers = {
         'Content-Type': 'application/json',
     }
-    
+
     try:
         response = requests.post(SUI_RPC_URL, data=json.dumps(payload), headers=headers)
         response.raise_for_status()  # Raise an exception for bad status codes (4xx or 5xx)
-        
+
         data = response.json()
         if 'error' in data:
-            raise RuntimeError(f"RPC error: {data['error']['message']}")
-            
+            # For suix_getCoinMetadata, 'error' is sometimes returned when no metadata is found.
+            # We return None instead of raising an error to handle this case gracefully.
+            if method == 'suix_getCoinMetadata':
+                return None
+            else:
+                raise RuntimeError(f"RPC error: {data['error']['message']}")
+
         return data['result']
-        
+
     except requests.exceptions.RequestException as e:
         raise RuntimeError(f"HTTP request error: {e}")
     except json.JSONDecodeError:
@@ -57,11 +62,11 @@ def get_coin_metadata(coin_type: str):
 # =======================================================
 def main():
     print(f"Fetching portfolio for address: {SUI_ADDRESS}\n")
-    
+
     try:
         # Step 1: Get all coin balances
         balances = get_all_balances(SUI_ADDRESS)
-        
+
         # Step 2: Iterate through balances to get metadata and format
         if not balances:
             print("No coins found in the portfolio.")
@@ -76,9 +81,16 @@ def main():
             
             # Step 3: Get coin metadata for a user-friendly view
             meta = get_coin_metadata(coin_type)
-            symbol = meta.get('symbol', 'N/A')
-            decimals = int(meta.get('decimals', 0))
             
+            # Fix: Check if meta is None before trying to access its keys
+            if meta:
+                symbol = meta.get('symbol', 'N/A')
+                decimals = int(meta.get('decimals', 0))
+            else:
+                # Fallback values if metadata isn't found
+                symbol = 'N/A'
+                decimals = 0
+                
             # Convert raw balance to a human-readable format
             human_balance = raw_balance / (10 ** decimals)
 
