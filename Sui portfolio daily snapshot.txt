@@ -1,0 +1,517 @@
+# =============================
+# Option A — Google Sheets (Apps Script) + Blockberry/SuiScan API
+# Files: apps_script.gs (paste into Extensions → Apps Script)
+# =============================
+
+### File: apps_script.gs
+/**
+ * Daily portfolio logger for a Sui address into Google Sheets.
+ * Why: avoids scraping, runs on a time-driven trigger, captures all coin balances.
+ */
+
+const ADDRESS = '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165';
+const SHEET_NAME = 'Portfolio';
+// Prefer Blockberry/SuiScan indexer API (includes USD valuations when available)
+const BLOCKBERRY_ENDPOINT = `https://api.blockberry.one/sui/v1/accounts/${ADDRESS}/balance`;
+
+/**
+ * Store API key in Script Properties: Extensions → Apps Script → Project Settings → Script properties
+ * Name: BLOCKBERRY_API_KEY  Value: <your key>
+ * Why: don’t hardcode secrets.
+ */
+function fetchPortfolio_() {
+  const apiKey = PropertiesService.getScriptProperties().getProperty('BLOCKBERRY_API_KEY');
+  const headers = apiKey
+    ? { 'X-API-KEY': apiKey } // Most indexers use this header; adjust if vendor states otherwise
+    : {}; // If the endpoint is temporarily open, it may work without a key
+
+  const res = UrlFetchApp.fetch(BLOCKBERRY_ENDPOINT, {
+    method: 'get',
+    muteHttpExceptions: true,
+    headers,
+  });
+  if (res.getResponseCode() >= 300) {
+    throw new Error(`HTTP ${res.getResponseCode()} — ${res.getContentText()}`);
+  }
+  return JSON.parse(res.getContentText());
+}
+
+function ensureSheet_() {
+  const ss = SpreadsheetApp.getActive();
+  let sh = ss.getSheetByName(SHEET_NAME);
+  if (!sh) sh = ss.insertSheet(SHEET_NAME);
+  // Minimal, wide schema; resilient to API shape changes
+  if (sh.getLastRow() === 0) {
+    sh.appendRow([
+      'date_iso', 'address', 'total_usd', 'coin_type', 'symbol', 'decimals', 'raw_balance', 'human_balance', 'coin_usd', 'data_json'
+    ]);
+  }
+  return sh;
+}
+
+function toNumber_(v) { return typeof v === 'string' ? Number(v) : v; }
+
+function logPortfolioOnce() {
+  const data = fetchPortfolio_();
+  const sh = ensureSheet_();
+  const now = new Date();
+  const dateIso = Utilities.formatDate(now, Session.getScriptTimeZone() || 'Asia/Bangkok', "yyyy-MM-dd'T'HH:mm:ssXXX");
+
+  // Expected shape (example): { totalUsd: number?, balances: [{ coinType, symbol, decimals, totalBalance, usdValue? }] }
+  const totalUsd = data.totalUsd ?? data.total_usd ?? '';
+  const balances = data.balances || data.result || data.data || [];
+
+  const rows = [];
+  balances.forEach((b) => {
+    const coinType = b.coinType || b.coin_type || '';
+    const symbol = b.symbol || '';
+    const decimals = toNumber_(b.decimals ?? 9);
+    const raw = String(b.totalBalance ?? b.balance ?? '0');
+    const human = (Number(raw) / Math.pow(10, decimals));
+    const usd = b.usdValue ?? b.usd ?? '';
+    rows.push([dateIso, ADDRESS, totalUsd, coinType, symbol, decimals, raw, human, usd, JSON.stringify(b)]);
+  });
+
+  if (rows.length === 0) {
+    // Fallback: log whole payload once
+    sh.appendRow([dateIso, ADDRESS, totalUsd, '', '', '', '', '', '', JSON.stringify(data)]);
+  } else {
+    sh.getRange(sh.getLastRow() + 1, 1, rows.length, rows[0].length).setValues(rows);
+  }
+}
+
+/** Create a daily trigger at 00:05 Bangkok time. */
+function setupDailyTrigger() {
+  // Clear duplicates
+  ScriptApp.getProjectTriggers().forEach((t) => { if (t.getHandlerFunction() === 'logPortfolioOnce') ScriptApp.deleteTrigger(t); });
+  ScriptApp.newTrigger('logPortfolioOnce')
+    .timeBased()
+    .atHour(0) // midnight local project time
+    .nearMinute(5)
+    .everyDays(1)
+    .create();
+}
+
+// Optional: manual run for testing
+function runNow() { logPortfolioOnce(); }
+
+
+# =============================
+# Option B — GitHub Actions + Python (Sui JSON‑RPC, **PLAIN** — no encryption)
+# Final, public & free setup so ChatGPT can read results daily (CSV + latest.json)
+# =============================
+
+### Files you need
+- `scripts/sui_daily_portfolio.py`
+- `data/.gitkeep` (empty)
+- `.github/workflows/sui_portfolio.yml`
+
+
+### File: scripts/sui_daily_portfolio.py
+#!/usr/bin/env python3
+"""Daily Sui portfolio snapshot using public JSON‑RPC (plaintext outputs).
+Outputs:
+  - data/portfolio_<addrprefix>.csv  (append-only, 1 row per coin per day)
+  - data/latest.json                 (full structured snapshot for easy reading)
+"""
+from __future__ import annotations
+
+import csv
+import datetime as dt
+import json
+import os
+import pathlib
+import typing as t
+import urllib.request
+import time
+
+RPC_URL = os.environ.get('SUI_RPC_URL', 'https://fullnode.mainnet.sui.io:443')
+ADDRESS = os.environ.get('SUI_ADDRESS', '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165')
+OUT_DIR = pathlib.Path(os.environ.get('OUT_DIR', 'data'))
+CSV_PATH = OUT_DIR / f'portfolio_{ADDRESS[:10]}.csv'
+LATEST_JSON = OUT_DIR / 'latest.json'
+
+# ---- JSON-RPC ----
+
+def _rpc_once(method: str, params: t.List[t.Any]) -> t.Any:
+    payload = json.dumps({'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params}).encode('utf-8')
+    req = urllib.request.Request(RPC_URL, data=payload, headers={'Content-Type': 'application/json'})
+    with urllib.request.urlopen(req, timeout=30) as r:  # stdlib only
+        body = r.read().decode('utf-8')
+    data = json.loads(body)
+    if 'error' in data:
+        raise RuntimeError(f"RPC error {data['error']}")
+    return data['result']
+
+
+def rpc(method: str, params: t.List[t.Any], retries: int = 3, backoff: float = 1.0) -> t.Any:
+    for attempt in range(retries):
+        try:
+            return _rpc_once(method, params)
+        except Exception:
+            if attempt == retries - 1:
+                raise
+            time.sleep(backoff * (2 ** attempt))
+
+
+def get_all_balances(address: str) -> t.List[dict]:
+    return rpc('suix_getAllBalances', [address])
+
+
+def get_coin_metadata(coin_type: str) -> dict:
+    return rpc('suix_getCoinMetadata', [coin_type]) or {}
+
+
+# ---- main ----
+
+def main() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    balances = get_all_balances(ADDRESS)
+    balances = sorted(balances, key=lambda b: b.get('coinType', ''))  # stable diffs
+
+    date_iso = dt.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z'
+    rows = []
+    json_balances = []
+
+    for b in balances:
+        coin_type = b.get('coinType')
+        raw = int(b.get('totalBalance', '0') or 0)
+        meta = get_coin_metadata(coin_type)
+        symbol = meta.get('symbol') or ''
+        decimals = int(meta.get('decimals') or 9)
+        human = raw / (10 ** decimals)
+
+        rows.append({
+            'date_iso': date_iso,
+            'address': ADDRESS,
+            'coin_type': coin_type,
+            'symbol': symbol,
+            'decimals': decimals,
+            'raw_balance': raw,
+            'human_balance': f"{human:.8f}",
+        })
+        json_balances.append({
+            'coin_type': coin_type,
+            'symbol': symbol,
+            'decimals': decimals,
+            'raw_balance': raw,
+            'human_balance': human,
+        })
+        time.sleep(0.05)
+
+    header = ['date_iso', 'address', 'coin_type', 'symbol', 'decimals', 'raw_balance', 'human_balance']
+    write_header = not CSV_PATH.exists()
+    with CSV_PATH.open('a', newline='') as f:
+        w = csv.DictWriter(f, fieldnames=header)
+        if write_header:
+            w.writeheader()
+        for r in rows:
+            w.writerow(r)
+
+    LATEST_JSON.write_text(json.dumps({
+        'date_iso': date_iso,
+        'address': ADDRESS,
+        'balances': json_balances
+    }, indent=2))
+
+
+if __name__ == '__main__':
+    main()
+
+
+### File: .github/workflows/sui_portfolio.yml
+name: Sui portfolio daily snapshot (plaintext public)
+
+on:
+  schedule:
+    - cron: '5 17 * * *'   # ~00:05 Asia/Bangkok (UTC+7)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run script
+        env:
+          SUI_ADDRESS: 0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165
+          SUI_RPC_URL: https://fullnode.mainnet.sui.io:443
+          OUT_DIR: data
+        run: |
+          python scripts/sui_daily_portfolio.py
+      - name: Commit snapshot
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A data
+          git commit -m "chore: daily snapshot" || echo "no changes"
+          git push
+
+
+### File: data/.gitkeep
+# empty
+
+
+### README — publish & share with ChatGPT
+1) Make the repo **Public** (Settings → General → Change visibility → Public).
+2) Commit these files; go to **Actions** → run the workflow once.
+3) After the run, open `data/latest.json` in GitHub and click **Raw**. Copy that URL.
+4) Paste the **Raw URL** into ChatGPT whenever you want analysis. It updates after each daily run.
+
+
+### File: scripts/sui_daily_portfolio.py
+#!/usr/bin/env python3
+"""Daily Sui portfolio snapshot using public JSON‑RPC.
+Free stack: GitHub Actions (public repo) + Sui public fullnode.
+Adds retry + coin metadata cache to reduce RPC calls.
+"""
+from __future__ import annotations
+
+import csv
+import datetime as dt
+import json
+import os
+import pathlib
+import typing as t
+import urllib.request
+import time
+import hashlib
+
+RPC_URL = os.environ.get('SUI_RPC_URL', 'https://fullnode.mainnet.sui.io:443')
+ADDRESS = os.environ.get('SUI_ADDRESS', '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165')
+OUT_DIR = pathlib.Path(os.environ.get('OUT_DIR', 'data'))
+CSV_PATH = OUT_DIR / f'portfolio_{ADDRESS[:10]}.csv'
+CACHE_PATH = OUT_DIR / 'coin_meta_cache.json'
+
+# ---- JSON-RPC helpers ----
+
+def _rpc_once(method: str, params: t.List[t.Any]) -> t.Any:
+    payload = json.dumps({
+        'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params
+    }).encode('utf-8')
+    req = urllib.request.Request(
+        RPC_URL,
+        data=payload,
+        headers={'Content-Type': 'application/json'}
+    )
+    with urllib.request.urlopen(req, timeout=30) as r:  # stdlib only
+        body = r.read().decode('utf-8')
+    data = json.loads(body)
+    if 'error' in data:
+        raise RuntimeError(f"RPC error {data['error']}")
+    return data['result']
+
+
+def rpc(method: str, params: t.List[t.Any], retries: int = 3, backoff: float = 1.0) -> t.Any:
+    """Retry to handle transient 429/5xx from public endpoint."""
+    for attempt in range(retries):
+        try:
+            return _rpc_once(method, params)
+        except Exception as e:  # noqa: BLE001
+            if attempt == retries - 1:
+                raise
+            time.sleep(backoff * (2 ** attempt))
+
+
+def get_all_balances(address: str) -> t.List[dict]:
+    return rpc('suix_getAllBalances', [address])
+
+
+# ---- metadata cache ----
+
+def _load_cache() -> dict:
+    if CACHE_PATH.exists():
+        try:
+            return json.loads(CACHE_PATH.read_text())
+        except Exception:  # corrupt cache
+            return {}
+    return {}
+
+
+def _save_cache(cache: dict) -> None:
+    CACHE_PATH.write_text(json.dumps(cache, indent=2, sort_keys=True))
+
+
+def get_coin_metadata_cached(coin_type: str, cache: dict) -> dict:
+    meta = cache.get(coin_type)
+    if meta is not None:
+        return meta
+    meta = rpc('suix_getCoinMetadata', [coin_type]) or {}
+    cache[coin_type] = meta
+    return meta
+
+
+# ---- main ----
+
+def main() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    balances = get_all_balances(ADDRESS)
+    cache = _load_cache()
+
+    rows = []
+    date_iso = dt.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z'
+
+    # deterministic order for git diffs
+    balances = sorted(balances, key=lambda b: b.get('coinType', ''))
+
+    for b in balances:
+        coin_type = b.get('coinType')
+        raw_str = b.get('totalBalance', '0')
+        try:
+            raw = int(raw_str)
+        except (TypeError, ValueError):
+            raw = 0
+        meta = get_coin_metadata_cached(coin_type, cache) or {}
+        symbol = meta.get('symbol') or ''
+        decimals = int(meta.get('decimals') or 9)
+        human = raw / (10 ** decimals)
+        rows.append({
+            'date_iso': date_iso,
+            'address': ADDRESS,
+            'coin_type': coin_type,
+            'symbol': symbol,
+            'decimals': decimals,
+            'raw_balance': raw,
+            'human_balance': f"{human:.8f}",
+        })
+        time.sleep(0.05)  # small delay to be gentle on rate limits
+
+    _save_cache(cache)
+
+    header = ['date_iso', 'address', 'coin_type', 'symbol', 'decimals', 'raw_balance', 'human_balance']
+    write_header = not CSV_PATH.exists()
+    with CSV_PATH.open('a', newline='') as f:
+        w = csv.DictWriter(f, fieldnames=header)
+        if write_header:
+            w.writeheader()
+        for r in rows:
+            w.writerow(r)
+
+
+if __name__ == '__main__':
+    main()
+
+
+### File: data/.gitkeep
+# (empty, ensures the folder exists in git)
+
+
+### File: .github/workflows/sui_portfolio.yml
+name: Sui portfolio daily snapshot
+
+on:
+  schedule:
+    - cron: '5 17 * * *'   # ~00:05 Asia/Bangkok (UTC+7)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write  # allow committing CSV back to the repo
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run script
+        env:
+          SUI_ADDRESS: 0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165
+          SUI_RPC_URL: https://fullnode.mainnet.sui.io:443
+        run: |
+          python scripts/sui_daily_portfolio.py
+      - name: Commit CSV
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add data/*.csv
+          git commit -m "chore: daily snapshot" || echo "no changes"
+          git push
+
+
+# =============================
+# Option C — Cloudflare Worker (cron) + KV storage
+# Files:
+#   wrangler.toml
+#   src/worker.ts (or worker.js)
+# =============================
+
+### File: wrangler.toml
+name = "sui-portfolio-cron"
+main = "src/worker.ts"
+compatibility_date = "2025-08-01"
+
+kv_namespaces = [
+  { binding = "PORTFOLIO", id = "<your_kv_id>", preview_id = "<your_preview_kv_id>" }
+]
+
+[vars]
+ADDRESS = "0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165"
+RPC_URL = "https://fullnode.mainnet.sui.io:443"
+
+[triggers]
+crons = ["5 17 * * *"]  # ~00:05 Asia/Bangkok daily
+
+
+### File: src/worker.ts
+/**
+ * Scheduled fetch of Sui balances and persist to KV by date.
+ * Why: cheap, always-on, no servers; KV serves as a simple history DB.
+ */
+export interface Env {
+  PORTFOLIO: KVNamespace;
+  ADDRESS: string;
+  RPC_URL: string;
+}
+
+async function rpc(env: Env, method: string, params: unknown[]): Promise<any> {
+  const res = await fetch(env.RPC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(JSON.stringify(data.error));
+  return data.result;
+}
+
+async function snapshot(env: Env) {
+  const balances = await rpc(env, 'suix_getAllBalances', [env.ADDRESS]);
+  const now = new Date();
+  const date = new Date(now.getTime() + (now.getTimezoneOffset() * 60000)).toISOString().slice(0, 10); // UTC date
+  const payload = { date_iso: new Date().toISOString(), address: env.ADDRESS, balances };
+  await env.PORTFOLIO.put(`sui:${env.ADDRESS}:${date}`, JSON.stringify(payload));
+  return payload;
+}
+
+export default {
+  /** HTTP endpoint to read the latest snapshot */
+  async fetch(req: Request, env: Env): Promise<Response> {
+    const url = new URL(req.url);
+    if (url.pathname === '/latest') {
+      const date = new Date().toISOString().slice(0, 10);
+      const key = `sui:${env.ADDRESS}:${date}`;
+      const val = await env.PORTFOLIO.get(key);
+      return new Response(val ?? JSON.stringify({ error: 'no snapshot' }), { headers: { 'Content-Type': 'application/json' } });
+    }
+    if (url.pathname === '/run-now') {
+      const data = await snapshot(env);
+      return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
+    }
+    return new Response('OK');
+  },
+
+  /** Cron */
+  async scheduled(_event: ScheduledEvent, env: Env, _ctx: ExecutionContext) {
+    await snapshot(env);
+  },
+} satisfies ExportedHandler<Env>;
