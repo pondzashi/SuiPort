@@ -1,0 +1,185 @@
+
+
+### File: data/.gitkeep
+# empty
+
+
+### README — publish & share with ChatGPT
+1) Make the repo **Public** (Settings → General → Change visibility → Public).
+2) Commit these files; go to **Actions** → run the workflow once.
+3) After the run, open `data/latest.json` in GitHub and click **Raw**. Copy that URL.
+4) Paste the **Raw URL** into ChatGPT whenever you want analysis. It updates after each daily run.
+
+
+### File: scripts/sui_daily_portfolio.py
+#!/usr/bin/env python3
+"""Daily Sui portfolio snapshot using public JSON‑RPC.
+Free stack: GitHub Actions (public repo) + Sui public fullnode.
+Adds retry + coin metadata cache to reduce RPC calls.
+"""
+from __future__ import annotations
+
+import csv
+import datetime as dt
+import json
+import os
+import pathlib
+import typing as t
+import urllib.request
+import time
+import hashlib
+
+RPC_URL = os.environ.get('SUI_RPC_URL', 'https://fullnode.mainnet.sui.io:443')
+ADDRESS = os.environ.get('SUI_ADDRESS', '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165')
+OUT_DIR = pathlib.Path(os.environ.get('OUT_DIR', 'data'))
+CSV_PATH = OUT_DIR / f'portfolio_{ADDRESS[:10]}.csv'
+CACHE_PATH = OUT_DIR / 'coin_meta_cache.json'
+
+# ---- JSON-RPC helpers ----
+
+def _rpc_once(method: str, params: t.List[t.Any]) -> t.Any:
+    payload = json.dumps({
+        'jsonrpc': '2.0', 'id': 1, 'method': method, 'params': params
+    }).encode('utf-8')
+    req = urllib.request.Request(
+        RPC_URL,
+        data=payload,
+        headers={'Content-Type': 'application/json'}
+    )
+    with urllib.request.urlopen(req, timeout=30) as r:  # stdlib only
+        body = r.read().decode('utf-8')
+    data = json.loads(body)
+    if 'error' in data:
+        raise RuntimeError(f"RPC error {data['error']}")
+    return data['result']
+
+
+def rpc(method: str, params: t.List[t.Any], retries: int = 3, backoff: float = 1.0) -> t.Any:
+    """Retry to handle transient 429/5xx from public endpoint."""
+    for attempt in range(retries):
+        try:
+            return _rpc_once(method, params)
+        except Exception as e:  # noqa: BLE001
+            if attempt == retries - 1:
+                raise
+            time.sleep(backoff * (2 ** attempt))
+
+
+def get_all_balances(address: str) -> t.List[dict]:
+    return rpc('suix_getAllBalances', [address])
+
+
+# ---- metadata cache ----
+
+def _load_cache() -> dict:
+    if CACHE_PATH.exists():
+        try:
+            return json.loads(CACHE_PATH.read_text())
+        except Exception:  # corrupt cache
+            return {}
+    return {}
+
+
+def _save_cache(cache: dict) -> None:
+    CACHE_PATH.write_text(json.dumps(cache, indent=2, sort_keys=True))
+
+
+def get_coin_metadata_cached(coin_type: str, cache: dict) -> dict:
+    meta = cache.get(coin_type)
+    if meta is not None:
+        return meta
+    meta = rpc('suix_getCoinMetadata', [coin_type]) or {}
+    cache[coin_type] = meta
+    return meta
+
+
+# ---- main ----
+
+def main() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+
+    balances = get_all_balances(ADDRESS)
+    cache = _load_cache()
+
+    rows = []
+    date_iso = dt.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z'
+
+    # deterministic order for git diffs
+    balances = sorted(balances, key=lambda b: b.get('coinType', ''))
+
+    for b in balances:
+        coin_type = b.get('coinType')
+        raw_str = b.get('totalBalance', '0')
+        try:
+            raw = int(raw_str)
+        except (TypeError, ValueError):
+            raw = 0
+        meta = get_coin_metadata_cached(coin_type, cache) or {}
+        symbol = meta.get('symbol') or ''
+        decimals = int(meta.get('decimals') or 9)
+        human = raw / (10 ** decimals)
+        rows.append({
+            'date_iso': date_iso,
+            'address': ADDRESS,
+            'coin_type': coin_type,
+            'symbol': symbol,
+            'decimals': decimals,
+            'raw_balance': raw,
+            'human_balance': f"{human:.8f}",
+        })
+        time.sleep(0.05)  # small delay to be gentle on rate limits
+
+    _save_cache(cache)
+
+    header = ['date_iso', 'address', 'coin_type', 'symbol', 'decimals', 'raw_balance', 'human_balance']
+    write_header = not CSV_PATH.exists()
+    with CSV_PATH.open('a', newline='') as f:
+        w = csv.DictWriter(f, fieldnames=header)
+        if write_header:
+            w.writeheader()
+        for r in rows:
+            w.writerow(r)
+
+
+if __name__ == '__main__':
+    main()
+
+
+### File: data/.gitkeep
+# (empty, ensures the folder exists in git)
+
+
+### File: .github/workflows/sui_portfolio.yml
+name: Sui portfolio daily snapshot
+
+on:
+  schedule:
+    - cron: '5 17 * * *'   # ~00:05 Asia/Bangkok (UTC+7)
+  workflow_dispatch: {}
+
+permissions:
+  contents: write  # allow committing CSV back to the repo
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run script
+        env:
+          SUI_ADDRESS: 0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165
+          SUI_RPC_URL: https://fullnode.mainnet.sui.io:443
+        run: |
+          python scripts/sui_daily_portfolio.py
+      - name: Commit CSV
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add data/*.csv
+          git commit -m "chore: daily snapshot" || echo "no changes"
+          git push
+
+
