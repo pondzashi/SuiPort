@@ -12,9 +12,12 @@ from urllib.error import URLError
 
 RPC_URL = os.environ.get('SUI_RPC_URL', 'https://fullnode.mainnet.sui.io:443')
 ADDRS_ENV = os.environ.get('SUI_ADDRESSES') or os.environ.get('SUI_ADDRESS') or ''
-ADDRESSES = [a.strip() for a in ADDRS_ENV.split(',') if a.strip()] or [
-    '0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e,0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165'
-]
+ADDRESSES = [a.strip() for a in ADDRS_ENV.split(',') if a.strip()]
+if not ADDRESSES:
+    ADDRESSES = ['0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165,0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e']
+# de-duplicate while preserving order
+seen = set()
+ADDRESSES = [a for a in ADDRESSES if not (a in seen or seen.add(a))]
 OUT_DIR = pathlib.Path(os.environ.get('OUT_DIR', 'data'))
 
 # ---- JSON-RPC ----
@@ -273,7 +276,7 @@ def get_coin_metadata(coin_type: str) -> dict:
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    balances = get_all_balances(ADDRESS)
+    balances = get_all_balances(address)
     balances = sorted(balances, key=lambda b: b.get('coinType', ''))  # stable diffs
 
     date_iso = dt.datetime.utcnow().replace(microsecond=0).isoformat() + 'Z'
@@ -335,4 +338,3 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
-
