@@ -1,3 +1,4 @@
+""
 from __future__ import annotations
 import json
 from pathlib import Path
@@ -10,14 +11,15 @@ def fmt_money(x):
 def main() -> None:
     p = Path('data/latest.json')
     if not p.exists():
-        print("# Portfolio summary
-
+        # Avoid multiline string errors; print two lines
+        print("# Portfolio summary")
+        print("
 Latest file not found.")
         return
 
     data = json.loads(p.read_text())
 
-    lines = []
+    lines: list[str] = []
     lines.append("# Portfolio summary")
     lines.append("")
     lines.append(f"**As of:** {data.get('date_iso','-')}  ")
@@ -34,8 +36,9 @@ Latest file not found.")
         lines.append(f"## Address {addr}")
         lines.append("")
 
-        # Wallet table (non-zero only)
+        # Wallet table (non-zero only), sorted by USD value desc if available
         nz = [b for b in acc.get('balances', []) if (b.get('human_balance') or 0) > 0]
+        nz.sort(key=lambda b: (b.get('usd_value') is None, -(b.get('usd_value') or 0)), reverse=False)
         if nz:
             lines.append("### Wallet balances")
             lines.append("| Symbol | Balance | USD price | USD value |")
@@ -52,6 +55,8 @@ Latest file not found.")
         # Suilend summary
         ss = (acc.get('defi') or {}).get('suilend_summary') or {}
         items = ss.get('items') or []
+        # sort by usd_value desc when available
+        items.sort(key=lambda it: (it.get('usd_value') is None, -(it.get('usd_value') or 0)), reverse=False)
         if items:
             lines.append("### Suilend positions")
             lines.append("| Type | Symbol | Amount | USD price | USD value |")
@@ -67,8 +72,7 @@ Latest file not found.")
             lines.append(f"**Net:** {fmt_money(ss.get('net_usd'))}")
             lines.append("")
 
-    print("
-".join(lines))
+    print("".join(lines))
 
 
 if __name__ == '__main__':
