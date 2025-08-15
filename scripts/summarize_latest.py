@@ -25,9 +25,7 @@ def load_json(path: str) -> dict:
 def build_report() -> str:
     data = load_json('data/latest.json')
     if not data:
-        return "# Portfolio report
-
-Latest file not found."
+        return "# Portfolio report Latest file not found."
 
     date_iso = data.get('date_iso', '-')
 
