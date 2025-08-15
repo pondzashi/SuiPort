@@ -1,4 +1,4 @@
-""
+
 from __future__ import annotations
 import json
 from pathlib import Path
@@ -13,8 +13,7 @@ def main() -> None:
     if not p.exists():
         # Avoid multiline string errors; print two lines
         print("# Portfolio summary")
-        print("
-Latest file not found.")
+        print("Latest file not found.")
         return
 
     data = json.loads(p.read_text())
