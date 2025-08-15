@@ -1,4 +1,4 @@
-name: Sui portfolio daily snapshot (wallet + Suilend + USD)
+name: Sui portfolio daily snapshot (wallet + DeFi via BlockVision + USD)
 
 on:
   schedule:
@@ -14,37 +14,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # --- Suilend (Node) ---
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install Suilend deps (with peer shims)
-        run: |
-          npm init -y
-          npm install --no-audit --no-fund \
-            @suilend/sdk @mysten/sui @suilend/sui-fe \
-            next @sentry/nextjs react react-dom
-      - name: Fetch Suilend obligations
-        env:
-          SUI_ADDRESSES: '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165,0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e'
-          SUI_RPC_URL: https://fullnode.mainnet.sui.io:443
-        run: node scripts/suilend_assets.mjs
-
-      # --- Wallet + USD (Python) ---
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Run Python snapshot & merge
+
+      # 1) Pull DeFi portfolio (SuiVision backend via BlockVision API)
+      - name: Fetch DeFi portfolio (BlockVision)
+        env:
+          SUI_ADDRESSES: '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165,0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e'
+          BLOCKVISION_API_KEY: ${{ secrets.BLOCKVISION_API_KEY }}
+          OUT_DIR: data
+        run: |
+          python scripts/fetch_defi_blockvision.py
+
+      # 2) Wallet balances + merge + USD totals
+      - name: Build wallet snapshot & merge
         env:
           SUI_ADDRESSES: '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165,0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e'
           SUI_RPC_URL: https://fullnode.mainnet.sui.io:443
           OUT_DIR: data
+          BLOCKVISION_API_KEY: ${{ secrets.BLOCKVISION_API_KEY }}
         run: |
           python scripts/sui_daily_portfolio.py
 
-      - name: Build DeFi summary markdown
+      # 3) Human-readable report
+      - name: Build Markdown report
         run: |
           python scripts/summarize_latest.py > data/defi_summary.md
+          ls -lah data
 
       - name: Commit snapshot
         run: |
@@ -53,4 +50,3 @@ jobs:
           git add -A data
           git commit -m "chore: daily snapshot" || echo "no changes"
           git push
-
