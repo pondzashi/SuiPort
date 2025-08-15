@@ -17,6 +17,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+      - name: Check secrets presence (no leak)
+        run: |
+          if [ -z "${{ secrets.BLOCKVISION_API_KEY }}" ]; then
+            echo "BLOCKVISION_API_KEY is MISSING"; exit 1;
+          else
+            echo "BLOCKVISION_API_KEY is set ✅";
+          fi
 
       # 1) Pull DeFi portfolio (SuiVision backend via BlockVision API)
       - name: Fetch DeFi portfolio (BlockVision)
