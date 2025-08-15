@@ -1,8 +1,5 @@
 
-### File: scripts/suilend_assets.mjs
-// Fetch Suilend obligations for 1..N addresses and persist JSON per address
-// This script is best-effort: SDK shapes can evolve; we keep both a simplified
-// view (deposits/borrows) and the raw response for safety.
+
 import fs from 'node:fs/promises';
 import { SuiClient } from '@mysten/sui/client';
 import { SuilendClient, LENDING_MARKET_ID, LENDING_MARKET_TYPE } from '@suilend/sdk';
