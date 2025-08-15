@@ -18,10 +18,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install Suilend deps
+      - name: Install Suilend deps (with peer shims)
         run: |
           npm init -y
-          npm install --no-audit --no-fund @suilend/sdk @mysten/sui @suilend/sui-fe
+          # SDK pulls a Sentry NextJS import deep inside; install light shims so "require" resolves
+          npm install --no-audit --no-fund \
+            @suilend/sdk @mysten/sui @suilend/sui-fe \
+            next @sentry/nextjs react react-dom
       - name: Fetch Suilend obligations
         env:
           SUI_ADDRESSES: '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165,0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165' # put your second address after comma
