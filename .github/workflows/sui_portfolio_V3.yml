@@ -53,3 +53,4 @@ jobs:
           git add -A data
           git commit -m "chore: daily snapshot" || echo "no changes"
           git push
+
