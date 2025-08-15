@@ -1,0 +1,28 @@
+name: Get Sui Portfolio Daily
+
+on:
+  schedule:
+    # This runs the workflow every day at 17:05 UTC (00:05 Bangkok time).
+    - cron: '5 17 * * *'
+  workflow_dispatch:
+  # This allows you to run the workflow manually from the Actions tab.
+
+jobs:
+  run-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Run Python script
+        run: |
+          python scripts/get_sui_portfolio.py
