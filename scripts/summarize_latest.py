@@ -85,8 +85,7 @@ def build_report() -> str:
             lines.append(f"**Net:** {fmt_money(suilend_net)}")
             lines.append("")
 
-        per_account_sections.append("
-".join(lines))
+        per_account_sections.append("".join(lines))
 
     # Optional: Other protocols (placeholders until fetchers added)
     # If in the future we write data/scallop_*.json, data/navi_*.json, we can parse here.
