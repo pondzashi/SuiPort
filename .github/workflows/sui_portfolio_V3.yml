@@ -21,13 +21,12 @@ jobs:
       - name: Install Suilend deps (with peer shims)
         run: |
           npm init -y
-          # SDK pulls a Sentry NextJS import deep inside; install light shims so "require" resolves
           npm install --no-audit --no-fund \
             @suilend/sdk @mysten/sui @suilend/sui-fe \
             next @sentry/nextjs react react-dom
       - name: Fetch Suilend obligations
         env:
-          SUI_ADDRESSES: '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165,0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e' # put your second address after comma
+          SUI_ADDRESSES: '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165,0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e'
           SUI_RPC_URL: https://fullnode.mainnet.sui.io:443
         run: node scripts/suilend_assets.mjs
 
@@ -42,6 +41,10 @@ jobs:
           OUT_DIR: data
         run: |
           python scripts/sui_daily_portfolio.py
+
+      - name: Build DeFi summary markdown
+        run: |
+          python scripts/summarize_latest.py > data/defi_summary.md
 
       - name: Commit snapshot
         run: |
