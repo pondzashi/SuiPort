@@ -1,3 +1,5 @@
 {
-  "error": "HTTP Error 403: Forbidden"
+  "error": "HTTP 403",
+  "reason": "Forbidden",
+  "body": "{\"code\":-32002,\"message\":\"db err\"}"
 }
