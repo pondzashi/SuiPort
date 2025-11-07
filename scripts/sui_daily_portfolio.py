@@ -16,7 +16,6 @@ ADDRESSES = [a.strip() for a in ADDRS_ENV.split(',') if a.strip()]
 if not ADDRESSES:
     # Fallback: put your addresses here as SEPARATE list items
     ADDRESSES = [
-        '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165',
         '0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e',
     ]
 # De-duplicate while preserving order

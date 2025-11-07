@@ -9,7 +9,7 @@
  * Why: avoids scraping, runs on a time-driven trigger, captures all coin balances.
  */
 
-const ADDRESS = '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165';
+const ADDRESS = '0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e';
 const SHEET_NAME = 'Portfolio';
 // Prefer Blockberry/SuiScan indexer API (includes USD valuations when available)
 const BLOCKBERRY_ENDPOINT = `https://api.blockberry.one/sui/v1/accounts/${ADDRESS}/balance`;
@@ -126,7 +126,7 @@ import urllib.request
 import time
 
 RPC_URL = os.environ.get('SUI_RPC_URL', 'https://fullnode.mainnet.sui.io:443')
-ADDRESS = os.environ.get('SUI_ADDRESS', '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165')
+ADDRESS = os.environ.get('SUI_ADDRESS', '0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e')
 OUT_DIR = pathlib.Path(os.environ.get('OUT_DIR', 'data'))
 CSV_PATH = OUT_DIR / f'portfolio_{ADDRESS[:10]}.csv'
 LATEST_JSON = OUT_DIR / 'latest.json'
@@ -241,7 +241,7 @@ jobs:
           python-version: '3.11'
       - name: Run script
         env:
-          SUI_ADDRESS: 0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165
+          SUI_ADDRESS: 0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e
           SUI_RPC_URL: https://fullnode.mainnet.sui.io:443
           OUT_DIR: data
         run: |
@@ -285,7 +285,7 @@ import time
 import hashlib
 
 RPC_URL = os.environ.get('SUI_RPC_URL', 'https://fullnode.mainnet.sui.io:443')
-ADDRESS = os.environ.get('SUI_ADDRESS', '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165')
+ADDRESS = os.environ.get('SUI_ADDRESS', '0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e')
 OUT_DIR = pathlib.Path(os.environ.get('OUT_DIR', 'data'))
 CSV_PATH = OUT_DIR / f'portfolio_{ADDRESS[:10]}.csv'
 CACHE_PATH = OUT_DIR / 'coin_meta_cache.json'
@@ -425,7 +425,7 @@ jobs:
           python-version: '3.11'
       - name: Run script
         env:
-          SUI_ADDRESS: 0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165
+          SUI_ADDRESS: 0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e
           SUI_RPC_URL: https://fullnode.mainnet.sui.io:443
         run: |
           python scripts/sui_daily_portfolio.py
@@ -455,7 +455,7 @@ kv_namespaces = [
 ]
 
 [vars]
-ADDRESS = "0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165"
+ADDRESS = "0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e"
 RPC_URL = "https://fullnode.mainnet.sui.io:443"
 
 [triggers]

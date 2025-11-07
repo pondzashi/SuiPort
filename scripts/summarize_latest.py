@@ -1,7 +1,10 @@
 from __future__ import annotations
+
+import argparse
+from collections import defaultdict
 import json
 from pathlib import Path
-from collections import defaultdict
+import sys
 
 
 def fmt_money(x: float | None) -> str:
@@ -12,7 +15,7 @@ def fmt_num(x: float | None) -> str:
     return "-" if x is None else (f"{x:,.6f}".rstrip('0').rstrip('.'))
 
 
-def load_json(path: str) -> dict:
+def load_json(path: str | Path) -> dict:
     p = Path(path)
     if not p.exists():
         return {}
@@ -22,8 +25,8 @@ def load_json(path: str) -> dict:
         return {}
 
 
-def build_report() -> str:
-    data = load_json('data/latest.json')
+def build_report(latest_json_path: str | Path = 'data/latest.json') -> str:
+    data = load_json(latest_json_path)
     if not data:
         return "# Portfolio report Latest file not found."
 
@@ -85,7 +88,9 @@ def build_report() -> str:
             lines.append(f"**Net:** {fmt_money(suilend_net)}")
             lines.append("")
 
-        per_account_sections.append("".join(lines))
+        # Trailing blank line to keep spacing consistent when joined later
+        lines.append("")
+        per_account_sections.append("\n".join(lines))
 
     # Optional: Other protocols (placeholders until fetchers added)
     # If in the future we write data/scallop_*.json, data/navi_*.json, we can parse here.
@@ -120,8 +125,47 @@ def build_report() -> str:
     head.append(f"- Cetus — {fmt_money(vaults_cetus)} *(not yet integrated)*")
     head.append("")
 
-    return "".join(head + per_account_sections)
+    sections: list[str] = head + [""] + per_account_sections if per_account_sections else head
+    return "\n".join(sections).rstrip() + "\n"
+
+
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Render a Markdown summary from data/latest.json",
+    )
+    parser.add_argument(
+        "--input",
+        "-i",
+        type=Path,
+        default=Path("data/latest.json"),
+        help="Path to the latest.json snapshot (default: data/latest.json)",
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        type=Path,
+        help="Optional path to write the Markdown report (default: print to stdout)",
+    )
+    parser.add_argument(
+        "--no-print",
+        action="store_true",
+        help="Skip printing the report to stdout",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv)
+    report = build_report(args.input)
+
+    if args.output:
+        args.output.write_text(report)
+
+    if not args.no_print:
+        sys.stdout.write(report)
+
+    return 0
 
 
 if __name__ == '__main__':
-    print(build_report())
+    raise SystemExit(main())
