@@ -5,6 +5,9 @@ on:
     - cron: '0 2 * * *'  # 09:00 Bangkok (UTC+7)
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   run-and-commit:
     runs-on: ubuntu-latest
