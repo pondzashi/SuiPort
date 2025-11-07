@@ -1,0 +1,3 @@
+# The project currently relies only on the Python standard library.
+# Keeping the file allows the workflow to install dependencies explicitly
+# and makes it easy to append external packages in the future.

@@ -26,25 +26,22 @@ jobs:
           echo "BLOCKVISION_API_KEY is set ✅"
       - name: Sanity ping BlockVision
         env:
-          ADDR1: '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165'
-          ADDR2: '0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e'
+          SUI_ADDRESS: '0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e'
         run: |
           set -eux
-          for A in "$ADDR1" "$ADDR2"; do
-            CODE=$(curl -sS -o /dev/null -w "%{http_code}" \
-              -H "X-API-Key: ${{ secrets.BLOCKVISION_API_KEY }}" \
-              -H "User-Agent: sui-portfolio-bot/1.0 (+github-actions)" \
-              "https://api.blockvision.org/v2/sui/account/defiPortfolio?address=$A")
-            echo "BlockVision status for $A: $CODE"
-            if [ "$CODE" != "200" ]; then
-              echo "Warning: BlockVision returned $CODE for $A"
-            fi
-          done
+          CODE=$(curl -sS -o /dev/null -w "%{http_code}" \
+            -H "X-API-Key: ${{ secrets.BLOCKVISION_API_KEY }}" \
+            -H "User-Agent: sui-portfolio-bot/1.0 (+github-actions)" \
+            "https://api.blockvision.org/v2/sui/account/defiPortfolio?address=$SUI_ADDRESS")
+          echo "BlockVision status for $SUI_ADDRESS: $CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "Warning: BlockVision returned $CODE for $SUI_ADDRESS"
+          fi
 
       # 1) Pull DeFi portfolio (SuiVision backend via BlockVision API)
       - name: Fetch DeFi portfolio (BlockVision)
         env:
-          SUI_ADDRESSES: '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165,0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e'
+          SUI_ADDRESSES: '0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e'
           BLOCKVISION_API_KEY: ${{ secrets.BLOCKVISION_API_KEY }}
           OUT_DIR: data
         run: |
@@ -53,7 +50,7 @@ jobs:
       # 2) Wallet balances + merge + USD totals
       - name: Build wallet snapshot & merge
         env:
-          SUI_ADDRESSES: '0x9e10f69f6475bcb01fb2117facd665c68483da2cdefa6a681fa6a874af0df165,0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e'
+          SUI_ADDRESSES: '0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e'
           SUI_RPC_URL: https://fullnode.mainnet.sui.io:443
           OUT_DIR: data
           BLOCKVISION_API_KEY: ${{ secrets.BLOCKVISION_API_KEY }}

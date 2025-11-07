@@ -1912,8 +1912,8 @@
     "usd-coin": 0.9998
   },
   "totals_usd": {
-    "wallet_sum": 54.818275,
-    "suilend_net": 0.0,
-    "portfolio_total": 54.818275
+    "wallet_sum": 57.378081,
+    "lending_sum": 0.0,
+    "portfolio_sum": 57.378081
   }
 }

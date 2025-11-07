@@ -2,6 +2,16 @@
 
 Scripts for collecting and visualising Sui portfolio data.
 
+## Setup
+
+Create a virtual environment if desired and install the requirements file (it is
+currently a placeholder so the automation workflow can install dependencies in a
+single place):
+
+```
+pip install -r requirements.txt
+```
+
 ## Quick Summary
 
 Print a simple wallet overview for one or more addresses via the Sui
@@ -16,6 +26,24 @@ SUI_ADDRESSES=addr1,addr2 python scripts/portfolio_summary.py
 
 If `SUI_ADDRESSES` is not provided, the script uses example addresses defined
 in the file.
+
+## Show the latest snapshot
+
+When the daily workflow (or a manual run of `scripts/run_daily_snapshot.py`)
+refreshes the repository it writes `data/latest.json` and the Markdown report
+`data/latest_report.md`.  To view the most recent report directly in the
+terminal, run:
+
+```
+python scripts/summarize_latest.py
+```
+
+You can also regenerate the Markdown file locally after editing
+`data/latest.json`:
+
+```
+python scripts/summarize_latest.py --output data/latest_report.md --no-print
+```
 
 ## Protocol Data
 
