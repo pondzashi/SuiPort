@@ -85,7 +85,9 @@ def build_report() -> str:
             lines.append(f"**Net:** {fmt_money(suilend_net)}")
             lines.append("")
 
-        per_account_sections.append("".join(lines))
+        # Trailing blank line to keep spacing consistent when joined later
+        lines.append("")
+        per_account_sections.append("\n".join(lines))
 
     # Optional: Other protocols (placeholders until fetchers added)
     # If in the future we write data/scallop_*.json, data/navi_*.json, we can parse here.
@@ -120,7 +122,8 @@ def build_report() -> str:
     head.append(f"- Cetus — {fmt_money(vaults_cetus)} *(not yet integrated)*")
     head.append("")
 
-    return "".join(head + per_account_sections)
+    sections: list[str] = head + [""] + per_account_sections if per_account_sections else head
+    return "\n".join(sections).rstrip() + "\n"
 
 
 if __name__ == '__main__':
