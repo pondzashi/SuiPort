@@ -1,0 +1,50 @@
+name: Daily Portfolio Snapshot
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # 09:00 Bangkok (UTC+7)
+  workflow_dispatch:
+
+jobs:
+  run-and-commit:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Bangkok
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip
+
+      - name: Refresh portfolio snapshot
+        env:
+          SUI_ADDRESSES: "0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e"
+          SUI_RPC_URL: "https://fullnode.mainnet.sui.io:443"
+        run: python scripts/run_daily_snapshot.py
+
+      - name: Configure Git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit changes
+        id: commit
+        run: |
+          git add data
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            git commit -m "chore: update daily portfolio snapshot"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push changes
+        if: steps.commit.outputs.changed == 'true'
+        run: git push
