@@ -1,6 +1,6 @@
 # Portfolio report
 
-**As of:** 2025-11-22T03:01:30Z  
+**As of:** 2025-11-23T03:25:05Z  
 **Totals (USD):** wallet=$54.74, lending=$0.00, vaults=$0.00, **portfolio=$54.74**
 
 ## Lending
@@ -18,12 +18,12 @@
 ### Wallet (non-zero)
 | Symbol | Balance | USD price | USD value |
 |---|---:|---:|---:|
-| USDC | 51.136368 | 0.999706 | $51.12 |
+| USDC | 51.136368 | 0.9997 | $51.12 |
 | SUI | 1.57586 | 1.38 | $2.17 |
 | SUI | 0.761256 | 1.38 | $1.05 |
-| USDC | 0.392712 | 0.999706 | $0.39 |
-| USDT | 0.000001 | 0.999503 | $0.00 |
-| USDC | 0.000001 | 0.999706 | $0.00 |
+| USDC | 0.392712 | 0.9997 | $0.39 |
+| USDT | 0.000001 | 0.999648 | $0.00 |
+| USDC | 0.000001 | 0.9997 | $0.00 |
 | $ afrwd.cc - Aftermath Reward Token | 8,603 | - | - |
 | BLUB | 69,000 | - | - |
 | $ rwdsl.net - Suilend Reward Token | 6,079 | - | - |
