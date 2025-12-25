@@ -1,7 +1,7 @@
 # Portfolio report
 
-**As of:** 2025-12-24T03:21:52Z  
-**Totals (USD):** wallet=$1.88, lending=$0.00, vaults=$0.00, **portfolio=$1.88**
+**As of:** 2025-12-25T03:24:46Z  
+**Totals (USD):** wallet=$8.50, lending=$0.00, vaults=$0.00, **portfolio=$8.50**
 
 ## Lending
 - Suilend — $0.00
@@ -18,14 +18,15 @@
 ### Wallet (non-zero)
 | Symbol | Balance | USD price | USD value |
 |---|---:|---:|---:|
-| SUI | 0.761256 | 1.4 | $1.07 |
-| SUI | 0.513145 | 1.4 | $0.72 |
-| USDC | 0.095481 | 0.999827 | $0.10 |
-| USDT | 0.004354 | 0.999569 | $0.00 |
-| USDC | 0.000001 | 0.999827 | $0.00 |
+| USDC | 6.774357 | 1 | $6.77 |
+| SUI | 0.761256 | 1.42 | $1.08 |
+| SUI | 0.450631 | 1.42 | $0.64 |
+| USDT | 0.004354 | 0.999567 | $0.00 |
+| USDC | 0.000001 | 1 | $0.00 |
 | $ afrwd.cc - Aftermath Reward Token | 8,603 | - | - |
 | BLUB | 69,000 | - | - |
 |  | 0.051136 | - | - |
+| WAL | 0.0001 | - | - |
 | $ rwdsl.net - Suilend Reward Token | 6,079 | - | - |
 | $ buckfi.cc - Bucket Reward Token | 9,563 | - | - |
 | NS | 0.056834 | - | - |
@@ -42,13 +43,13 @@
 | suirwd.io | 9,683.2 | - | - |
 | HUSKI | 0.000001 | - | - |
 | $ rwdaf.com - Aftermath Reward Token | 7,906 | - | - |
-| DEEP | 0.713923 | - | - |
+| DEEP | 0.728928 | - | - |
 | sDEEP | 0.02173 | - | - |
 | $ scafi.io - SCA Reward | 9,061 | - | - |
 | TYPUS | 0.102028 | - | - |
 | BLUB | 69,000 | - | - |
 
-**Wallet total (USD):** $1.88
+**Wallet total (USD):** $8.50
 
 ### Suilend
 | Type | Symbol | Amount | USD price | USD value |
