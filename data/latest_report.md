@@ -1,6 +1,6 @@
 # Portfolio report
 
-**As of:** 2026-01-08T03:27:55Z  
+**As of:** 2026-01-09T03:26:48Z  
 **Totals (USD):** wallet=$60.34, lending=$0.00, vaults=$0.00, **portfolio=$60.34**
 
 ## Lending
@@ -18,12 +18,12 @@
 ### Wallet (non-zero)
 | Symbol | Balance | USD price | USD value |
 |---|---:|---:|---:|
-| USDC | 51.136368 | 0.999876 | $51.13 |
+| USDC | 51.136368 | 0.999814 | $51.13 |
 | SUI | 4.259678 | 1.81 | $7.71 |
 | SUI | 0.761256 | 1.81 | $1.38 |
-| USDC | 0.115347 | 0.999876 | $0.12 |
+| USDC | 0.115347 | 0.999814 | $0.12 |
 | haSUI | 0.004304 | 1.81 | $0.01 |
-| USDC | 0.000001 | 0.999876 | $0.00 |
+| USDC | 0.000001 | 0.999814 | $0.00 |
 | $ afrwd.cc - Aftermath Reward Token | 8,603 | - | - |
 | BLUB | 69,000 | - | - |
 | WAL | 0.000105 | - | - |
@@ -35,7 +35,7 @@
 | CETUSDAO | 0.000126 | - | - |
 | $ rwdsl.com - Suilend Reward Token | 8,091 | - | - |
 | BLUB | 69,000 | - | - |
-|  | 0.000188 | - | - |
+| Swavo.fi Points | 1,881.89 | - | - |
 | NAVX | 0.20703 | - | - |
 | $ rwdaf.com - Aftermath Reward Token | 5,716 | - | - |
 | Swavo.fi Points | 6,367.74 | - | - |
