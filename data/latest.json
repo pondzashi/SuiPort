@@ -1,9 +1,9 @@
 {
-  "date_iso": "2026-01-10T03:20:52Z",
+  "date_iso": "2026-01-11T03:46:07Z",
   "accounts": [
     {
       "address": "0xa63ef51b8abf601fb40d8514050a8d5613c0509d4b36323dc4439ee6c69d704e",
-      "date_iso": "2026-01-10T03:20:39Z",
+      "date_iso": "2026-01-11T03:45:53Z",
       "balances": [
         {
           "coin_type": "0x1571171dc42b38196d45da85bf75e596bbde5708a4e8b706edd077d400121105::haedal::HAEDAL",
@@ -54,10 +54,10 @@
           "coin_type": "0x2::sui::SUI",
           "symbol": "SUI",
           "decimals": 9,
-          "raw_balance": 4259678444,
-          "human_balance": 4.259678444,
-          "usd_price": 1.79,
-          "usd_value": 7.624824
+          "raw_balance": 1089854221,
+          "human_balance": 1.089854221,
+          "usd_price": 1.8,
+          "usd_value": 1.961738
         },
         {
           "coin_type": "0x2b6602099970374cf58a2a1b9d96f005fccceb81e92eb059873baf420eb6c717::x_sui::X_SUI",
@@ -74,8 +74,8 @@
           "decimals": 6,
           "raw_balance": 51136368,
           "human_balance": 51.136368,
-          "usd_price": 0.999854,
-          "usd_value": 51.128902
+          "usd_price": 1.0,
+          "usd_value": 51.136368
         },
         {
           "coin_type": "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL",
@@ -90,10 +90,10 @@
           "coin_type": "0x375f70cf2ae4c00bf37117d0c85a2c71545e6ee05c4a5c7d282cd66a4504b068::usdt::USDT",
           "symbol": "USDT",
           "decimals": 6,
-          "raw_balance": 0,
-          "human_balance": 0.0,
-          "usd_price": 0.998739,
-          "usd_value": 0.0
+          "raw_balance": 3347,
+          "human_balance": 0.003347,
+          "usd_price": 0.998876,
+          "usd_value": 0.003343
         },
         {
           "coin_type": "0x3a304c7feba2d819ea57c3542d68439ca2c386ba02159c740f7b406e592c62ea::haedal::HAEDAL",
@@ -155,7 +155,7 @@
           "decimals": 9,
           "raw_balance": 0,
           "human_balance": 0.0,
-          "usd_price": 1.79,
+          "usd_price": 1.8,
           "usd_value": 0.0
         },
         {
@@ -200,7 +200,7 @@
           "decimals": 6,
           "raw_balance": 0,
           "human_balance": 0.0,
-          "usd_price": 0.999854,
+          "usd_price": 1.0,
           "usd_value": 0.0
         },
         {
@@ -234,8 +234,8 @@
           "coin_type": "0x6864a6f921804860930db6ddbe2e16acdf8504495ea7481637a1c8b9a8fe54b::cetus::CETUS",
           "symbol": "CETUS",
           "decimals": 9,
-          "raw_balance": 1762584388,
-          "human_balance": 1.762584388,
+          "raw_balance": 2110664552,
+          "human_balance": 2.110664552,
           "usd_price": null,
           "usd_value": null
         },
@@ -299,7 +299,7 @@
           "decimals": 9,
           "raw_balance": 0,
           "human_balance": 0.0,
-          "usd_price": 1.79,
+          "usd_price": 1.8,
           "usd_value": 0.0
         },
         {
@@ -317,8 +317,8 @@
           "decimals": 9,
           "raw_balance": 761255531,
           "human_balance": 0.761255531,
-          "usd_price": 1.79,
-          "usd_value": 1.362647
+          "usd_price": 1.8,
+          "usd_value": 1.37026
         },
         {
           "coin_type": "0x8c47c0bde84b7056520a44f46c56383e714cc9b6a55e919d8736a34ec7ccb533::suicune::SUICUNE",
@@ -344,7 +344,7 @@
           "decimals": 8,
           "raw_balance": 0,
           "human_balance": 0.0,
-          "usd_price": 0.999854,
+          "usd_price": 1.0,
           "usd_value": 0.0
         },
         {
@@ -416,7 +416,7 @@
           "decimals": 9,
           "raw_balance": 0,
           "human_balance": 0.0,
-          "usd_price": 1.79,
+          "usd_price": 1.8,
           "usd_value": 0.0
         },
         {
@@ -434,7 +434,7 @@
           "decimals": 6,
           "raw_balance": 0,
           "human_balance": 0.0,
-          "usd_price": 0.999854,
+          "usd_price": 1.0,
           "usd_value": 0.0
         },
         {
@@ -461,7 +461,7 @@
           "decimals": 8,
           "raw_balance": 0,
           "human_balance": 0.0,
-          "usd_price": 135.91,
+          "usd_price": 135.9,
           "usd_value": 0.0
         },
         {
@@ -479,8 +479,8 @@
           "decimals": 9,
           "raw_balance": 4304060,
           "human_balance": 0.00430406,
-          "usd_price": 1.79,
-          "usd_value": 0.007704
+          "usd_price": 1.8,
+          "usd_value": 0.007747
         },
         {
           "coin_type": "0xc060006111016b8a020ad5b33834984a437aaa7d3c74c18e09a95d48aceab08c::coin::COIN",
@@ -488,7 +488,7 @@
           "decimals": 6,
           "raw_balance": 0,
           "human_balance": 0.0,
-          "usd_price": 0.998739,
+          "usd_price": 0.998876,
           "usd_value": 0.0
         },
         {
@@ -524,7 +524,7 @@
           "decimals": 6,
           "raw_balance": 0,
           "human_balance": 0.0,
-          "usd_price": 0.999854,
+          "usd_price": 1.0,
           "usd_value": 0.0
         },
         {
@@ -558,8 +558,8 @@
           "coin_type": "0xd1b72982e40348d069bb1ff701e634c117bb5f741f44dff91e472d3b01461e55::stsui::STSUI",
           "symbol": "stSUI",
           "decimals": 9,
-          "raw_balance": 5,
-          "human_balance": 5e-09,
+          "raw_balance": 0,
+          "human_balance": 0.0,
           "usd_price": null,
           "usd_value": null
         },
@@ -621,10 +621,10 @@
           "coin_type": "0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC",
           "symbol": "USDC",
           "decimals": 6,
-          "raw_balance": 115347,
-          "human_balance": 0.115347,
-          "usd_price": 0.999854,
-          "usd_value": 0.11533
+          "raw_balance": 45579,
+          "human_balance": 0.045579,
+          "usd_price": 1.0,
+          "usd_value": 0.045579
         },
         {
           "coin_type": "0xdbe380b13a6d0f5cdedd58de8f04625263f113b3f9db32b3e1983f49e2841676::coin::COIN",
@@ -668,7 +668,7 @@
           "decimals": 6,
           "raw_balance": 1,
           "human_balance": 1e-06,
-          "usd_price": 0.999854,
+          "usd_price": 1.0,
           "usd_value": 1e-06
         },
         {
@@ -1919,19 +1919,19 @@
         }
       },
       "totals": {
-        "wallet_usd": 60.239409
+        "wallet_usd": 54.525036
       }
     }
   ],
   "prices_usd": {
-    "solana": 135.91,
-    "sui": 1.79,
-    "tether": 0.998739,
-    "usd-coin": 0.999854
+    "solana": 135.9,
+    "sui": 1.8,
+    "tether": 0.998876,
+    "usd-coin": 1.0
   },
   "totals_usd": {
-    "wallet_sum": 60.239409,
+    "wallet_sum": 54.525036,
     "suilend_net": 0.0,
-    "portfolio_total": 60.239409
+    "portfolio_total": 54.525036
   }
 }
