@@ -1,7 +1,7 @@
 # Portfolio report
 
-**As of:** 2026-01-25T03:49:58Z  
-**Totals (USD):** wallet=$124.84, lending=$0.00, vaults=$0.00, **portfolio=$124.84**
+**As of:** 2026-01-26T03:52:59Z  
+**Totals (USD):** wallet=$181.11, lending=$0.00, vaults=$0.00, **portfolio=$181.11**
 
 ## Lending
 - Suilend — $0.00
@@ -18,22 +18,21 @@
 ### Wallet (non-zero)
 | Symbol | Balance | USD price | USD value |
 |---|---:|---:|---:|
-| USDC | 70.256969 | 0.99964 | $70.23 |
-| USDC | 51.136368 | 0.99964 | $51.12 |
-| SUI | 1.339645 | 1.47 | $1.97 |
-| SUI | 0.761256 | 1.47 | $1.12 |
-| haSUI | 0.270009 | 1.47 | $0.40 |
-| USDT | 0.000596 | 0.998578 | $0.00 |
-| USDC | 0.000001 | 0.99964 | $0.00 |
+| USDC | 127.337467 | 0.999601 | $127.29 |
+| USDC | 51.136368 | 0.999601 | $51.12 |
+| SUI | 1.130852 | 1.43 | $1.62 |
+| SUI | 0.761256 | 1.43 | $1.09 |
+| USDT | 0.000596 | 0.998659 | $0.00 |
+| USDC | 0.000001 | 0.999601 | $0.00 |
 | $ afrwd.cc - Aftermath Reward Token | 8,603 | - | - |
 | BLUB | 69,000 | - | - |
 | xSUI | 0.13019 | - | - |
-| WAL | 0.000105 | - | - |
+| WAL | 0.000113 | - | - |
 | $ rwdsl.net - Suilend Reward Token | 6,079 | - | - |
 | $ buckfi.cc - Bucket Reward Token | 9,563 | - | - |
 | NS | 0.056834 | - | - |
 | BLUB | 69,000 | - | - |
-| CETUS | 0.4711 | - | - |
+| CETUS | 1.049274 | - | - |
 | CETUSDAO | 0.000126 | - | - |
 | $ rwdsl.com - Suilend Reward Token | 8,091 | - | - |
 | BLUB | 69,000 | - | - |
@@ -41,7 +40,7 @@
 | NAVX | 0.20703 | - | - |
 | $ rwdaf.com - Aftermath Reward Token | 5,716 | - | - |
 | Swavo.fi Points | 6,367.74 | - | - |
-| stSUI | 0.363142 | - | - |
+| stSUI | 0 | - | - |
 | SUIAGENT | 6,500 | - | - |
 | suirwd.io | 9,683.2 | - | - |
 | HUSKI | 0.000001 | - | - |
@@ -52,7 +51,7 @@
 | TYPUS | 0.102028 | - | - |
 | BLUB | 69,000 | - | - |
 
-**Wallet total (USD):** $124.84
+**Wallet total (USD):** $181.11
 
 ### Suilend
 | Type | Symbol | Amount | USD price | USD value |
