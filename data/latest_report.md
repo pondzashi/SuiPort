@@ -1,7 +1,7 @@
 # Portfolio report
 
-**As of:** 2026-03-02T04:09:41Z  
-**Totals (USD):** wallet=$52.70, lending=$0.00, vaults=$0.00, **portfolio=$52.70**
+**As of:** 2026-03-03T04:10:24Z  
+**Totals (USD):** wallet=$52.71, lending=$0.00, vaults=$0.00, **portfolio=$52.71**
 
 ## Lending
 - Suilend — $0.00
@@ -18,11 +18,11 @@
 ### Wallet (non-zero)
 | Symbol | Balance | USD price | USD value |
 |---|---:|---:|---:|
-| USDC | 51.136368 | 0.999968 | $51.13 |
-| SUI | 0.95033 | 0.908507 | $0.86 |
-| SUI | 0.761256 | 0.908507 | $0.69 |
-| USDC | 0.005517 | 0.999968 | $0.01 |
-| USDC | 0.000001 | 0.999968 | $0.00 |
+| USDC | 51.136368 | 0.999894 | $51.13 |
+| SUI | 0.95033 | 0.920956 | $0.88 |
+| SUI | 0.761256 | 0.920956 | $0.70 |
+| USDC | 0.005517 | 0.999894 | $0.01 |
+| USDC | 0.000001 | 0.999894 | $0.00 |
 | $ afrwd.cc - Aftermath Reward Token | 8,603 | - | - |
 | BLUB | 69,000 | - | - |
 | NFT RECEIVED | 0 | - | - |
@@ -49,7 +49,7 @@
 | TYPUS | 0.102028 | - | - |
 | BLUB | 69,000 | - | - |
 
-**Wallet total (USD):** $52.70
+**Wallet total (USD):** $52.71
 
 ### Suilend
 | Type | Symbol | Amount | USD price | USD value |
