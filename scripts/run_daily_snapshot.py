@@ -6,6 +6,7 @@ from pathlib import Path
 
 import sui_daily_portfolio
 import summarize_latest
+import update_history
 
 
 def main() -> None:
@@ -17,6 +18,9 @@ def main() -> None:
     # Build the Markdown report and save it alongside the other data files.
     report = summarize_latest.build_report()
     Path("data/latest_report.md").write_text(report)
+
+    # Append this snapshot to historical trend files.
+    update_history.main()
 
 
 if __name__ == "__main__":
