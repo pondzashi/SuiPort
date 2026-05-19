@@ -1,3 +1,7 @@
-# The project currently relies only on the Python standard library.
-# Keeping the file allows the workflow to install dependencies explicitly
-# and makes it easy to append external packages in the future.
+pandas>=2.2
+requests>=2.32
+beautifulsoup4>=4.12
+tenacity>=9.0
+streamlit>=1.45
+plotly>=5.24
+playwright>=1.54
